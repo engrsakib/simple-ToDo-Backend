@@ -72,9 +72,9 @@ async function run() {
     const ToDoAppsUsers = client
       .db("ToDoApps")
       .collection("users");
-    const bloodCallectionDonation = client
+    const ToDoAppsTask = client
       .db("ToDoApps")
-      .collection("donations");
+      .collection("Tasks");
     const bloodCallectionBlogs = client
       .db("ToDoApps")
       .collection("blogs");
@@ -248,6 +248,28 @@ async function run() {
 
     
 
+    // add task related work
+    app.post("/tasks", async (req, res) => {
+      try {
+        const newTask = req.body;
+    
+        // Input validation (Optional but Recommended)
+        if (!newTask.title || !newTask.category) {
+          return res.status(400).json({ message: "Title and Category are required!" });
+        }
+    
+        const result = await ToDoAppsTask.insertOne(newTask);
+    
+        if (result.acknowledged) {
+          res.status(201).json({ message: "Task Added Successfully", taskId: result.insertedId });
+        } else {
+          res.status(500).json({ message: "Failed to add task!" });
+        }
+      } catch (error) {
+        console.error("Error inserting task:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      }
+    });
     
     
 
