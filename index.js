@@ -69,7 +69,7 @@ async function run() {
     // );
 
     // database filed create
-    const bloodCallectionUser = client
+    const ToDoAppsUsers = client
       .db("ToDoApps")
       .collection("users");
     const bloodCallectionDonation = client
@@ -88,7 +88,7 @@ async function run() {
       try {
         const email = req.params.mail;
 
-        const result = await bloodCallectionUser.findOne({ email });
+        const result = await ToDoAppsUsers.findOne({ email });
 
         if (!result) {
           return res.status(404).send({ message: "User not found" });
@@ -131,7 +131,7 @@ async function run() {
     app.post("/users", async (req, res) => {
       const newUser = req.body;
       // console.log(newUser);
-      const result = await bloodCallectionUser.insertOne(newUser);
+      const result = await ToDoAppsUsers.insertOne(newUser);
       res.send(result);
     });
 
@@ -146,14 +146,14 @@ async function run() {
           $set: {
             name: updateData.name,
             photoUrl: updateData.photoUrl,
-            bloodGroup: updateData.bloodGroup,
+            gender: updateData.gender,
             district: updateData.district,
             upazila: updateData.upazila,
             lastDonation: updateData.lastDonation || null,
           },
         };
 
-        const result = await bloodCallectionUser.updateOne(filter, updateDoc);
+        const result = await ToDoAppsUsers.updateOne(filter, updateDoc);
 
         if (result.matchedCount === 0) {
           return res
@@ -174,7 +174,7 @@ async function run() {
     // all users
     app.get("/users", async (req, res) => {
       try {
-        const result = await bloodCallectionUser.find({}).toArray();
+        const result = await ToDoAppsUsers.find({}).toArray();
 
         if (!result || result.length === 0) {
           return res.status(404).send({ message: "No users found" });
@@ -200,7 +200,7 @@ async function run() {
         // console.log("User ID:", id);
         // console.log("Status:", status);
 
-        const result = await bloodCallectionUser.updateOne(
+        const result = await ToDoAppsUsers.updateOne(
           { _id: new ObjectId(id) }, // Make sure ObjectId is imported correctly
           { $set: { status: status } } // Correctly set the status field
         );
@@ -222,7 +222,7 @@ async function run() {
     app.delete("/users/:id", async (req, res) => {
       try {
         const { id } = req.params;
-        const result = await bloodCallectionUser.deleteOne({
+        const result = await ToDoAppsUsers.deleteOne({
           _id: new ObjectId(id),
         });
         res.send(result);
@@ -236,7 +236,7 @@ async function run() {
       try {
         const { id } = req.params;
         const { role } = req.body;
-        const result = await bloodCallectionUser.updateOne(
+        const result = await ToDoAppsUsers.updateOne(
           { _id: new ObjectId(id) },
           { $set: { role } }
         );
