@@ -317,8 +317,75 @@ async function run() {
       }
     });
     
-
+    // get Completed task
+    app.get("/add-task/getDoneTask/:email", async (req, res) => {
+      try {
+        const userEmail = req.params.email;
     
+        if (!userEmail) {
+          return res.status(400).json({ message: "User email is required!" });
+        }
+    
+        // user.email
+        const result = await ToDoAppsTask.find({ "user.email": userEmail, category: "Done" }).toArray();
+    
+        if (!result || result.length === 0) {
+          return res.status(404).json({ message: "No tasks found in 'In Progress' category for this user." });
+        }
+    
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      }
+    });
+    
+    // update task status  /add-task/updateCategory/${id}
+    app.patch("/add-task/updateCategory/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { category } = req.body;
+        console.log({id, category});
+        if (!category) {
+          return res.status(400).json({ message: "Category is required!" });
+        }
+    
+        const result = await ToDoAppsTask.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { category } }
+        );
+    
+        if (result.modifiedCount === 0) {
+          return res.status(404).json({ message: "Task not found or category is already the same." });
+        }
+    
+        res.status(200).json({ message: "Task status updated successfully" });
+      } catch (error) {
+        console.error("Error updating task status:", error);
+        res.status(500).json({ message: "Failed to update task status", error: error.message });
+      }
+    });
+
+
+    // delete task
+    app.delete("/add-task/deleteTask/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const result = await ToDoAppsTask.deleteOne({
+          _id: new ObjectId(id),
+        });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Failed to delete task" });
+      }
+    });
+
+
+
+
+
+
+
    
   } finally {
     // Ensures that the client will close when you finish/error
