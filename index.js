@@ -271,6 +271,28 @@ async function run() {
       }
     });
     
+    // get To-Do task
+    app.get("/add-task/getTodoTask/:email", async (req, res) => {
+      try {
+        const userEmail = req.params.email;
+    
+        if (!userEmail) {
+          return res.status(400).json({ message: "User email is required!" });
+        }
+    
+        // user.email
+        const result = await ToDoAppsTask.find({ "user.email": userEmail, category: "To-Do" }).toArray();
+    
+        if (!result || result.length === 0) {
+          return res.status(404).json({ message: "No tasks found in 'In Progress' category for this user." });
+        }
+    
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      }
+    });
     
 
     
