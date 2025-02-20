@@ -345,7 +345,7 @@ async function run() {
       try {
         const { id } = req.params;
         const { category } = req.body;
-        console.log({id, category});
+        // console.log({id, category});
         if (!category) {
           return res.status(400).json({ message: "Category is required!" });
         }
