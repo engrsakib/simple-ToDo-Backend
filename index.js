@@ -14,7 +14,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://engrsakib-blood-donations-project.netlify.app",
+      "https://engrsakib-todo-applications.surge.sh",
     ], // Replace with your React app's URL
     credentials: true, // Allow credentials (cookies)
   })
