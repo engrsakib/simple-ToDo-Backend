@@ -14,7 +14,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://engrsakib-blood-donations-project.netlify.app"
+      "https://engrsakib-blood-donations-project.netlify.app",
     ], // Replace with your React app's URL
     credentials: true, // Allow credentials (cookies)
   })
@@ -69,18 +69,10 @@ async function run() {
     // );
 
     // database filed create
-    const ToDoAppsUsers = client
-      .db("ToDoApps")
-      .collection("users");
-    const ToDoAppsTask = client
-      .db("ToDoApps")
-      .collection("Tasks");
-    const bloodCallectionBlogs = client
-      .db("ToDoApps")
-      .collection("blogs");
-    const bloodCallectionFund = client
-      .db("ToDoApps")
-      .collection("funds");
+    const ToDoAppsUsers = client.db("ToDoApps").collection("users");
+    const ToDoAppsTask = client.db("ToDoApps").collection("Tasks");
+    const bloodCallectionBlogs = client.db("ToDoApps").collection("blogs");
+    const bloodCallectionFund = client.db("ToDoApps").collection("funds");
 
     // user related query
     // get users
@@ -246,51 +238,127 @@ async function run() {
       }
     });
 
-    
-
     // add task related work
     app.post("/tasks", async (req, res) => {
       try {
         const newTask = req.body;
-    
+
         // Input validation (Optional but Recommended)
         if (!newTask.title || !newTask.category) {
-          return res.status(400).json({ message: "Title and Category are required!" });
+          return res
+            .status(400)
+            .json({ message: "Title and Category are required!" });
         }
-    
+
         const result = await ToDoAppsTask.insertOne(newTask);
-    
+
         if (result.acknowledged) {
-          res.status(201).json({ message: "Task Added Successfully", taskId: result.insertedId });
+          res.status(201).json({
+            message: "Task Added Successfully",
+            taskId: result.insertedId,
+          });
         } else {
           res.status(500).json({ message: "Failed to add task!" });
         }
       } catch (error) {
         console.error("Error inserting task:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+          .status(500)
+          .json({ message: "Internal Server Error", error: error.message });
       }
     });
-    
+
+    // task edit
+    app.get("/edit-task/:id", async (req, res) => {
+      try {
+        const taskId = req.params.id;
+
+        if (!taskId) {
+          return res.status(400).json({ message: "Task ID is required!" });
+        }
+
+        const result = await ToDoAppsTask.findOne({
+          _id: new ObjectId(taskId),
+        });
+
+        if (!result) {
+          return res.status(404).json({ message: "Task not found!" });
+        }
+
+        res.status(200).json(result);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        res
+          .status(500)
+          .json({ message: "Internal Server Error", error: error.message });
+      }
+    });
+
+    // update task
+    // Update a task
+    app.put("/update-task/:id", async (req, res) => {
+      try {
+        const taskId = req.params.id;
+        const { title, description, category } = req.body;
+
+        if (!ObjectId.isValid(taskId)) {
+          return res.status(400).json({ message: "Invalid Task ID" });
+        }
+
+        const timestamp = new Date().toISOString();
+        const [date, time] = timestamp.split("T");
+
+        const updatedTask = {
+          title,
+          description,
+          category,
+          date: date,
+          time: time.split(".")[0],
+        };
+
+        const result = await ToDoAppsTask.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: updatedTask }
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json({ message: "Task updated successfully" });
+      } catch (error) {
+        console.error("Error updating task:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
     // get To-Do task
     app.get("/add-task/getTodoTask/:email", async (req, res) => {
       try {
         const userEmail = req.params.email;
-    
+
         if (!userEmail) {
           return res.status(400).json({ message: "User email is required!" });
         }
-    
+
         // user.email
-        const result = await ToDoAppsTask.find({ "user.email": userEmail, category: "To-Do" }).toArray();
-    
+        const result = await ToDoAppsTask.find({
+          "user.email": userEmail,
+          category: "To-Do",
+        }).toArray();
+
         if (!result || result.length === 0) {
-          return res.status(404).json({ message: "No tasks found in 'In Progress' category for this user." });
+          return res.status(404).json({
+            message: "No tasks found in 'In Progress' category for this user.",
+          });
         }
-    
+
         res.status(200).json(result);
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+          .status(500)
+          .json({ message: "Internal Server Error", error: error.message });
       }
     });
 
@@ -298,48 +366,62 @@ async function run() {
     app.get("/add-task/getInProgressTask/:email", async (req, res) => {
       try {
         const userEmail = req.params.email;
-    
+
         if (!userEmail) {
           return res.status(400).json({ message: "User email is required!" });
         }
-    
+
         // user.email
-        const result = await ToDoAppsTask.find({ "user.email": userEmail, category: "In Progress" }).toArray();
-    
+        const result = await ToDoAppsTask.find({
+          "user.email": userEmail,
+          category: "In Progress",
+        }).toArray();
+
         if (!result || result.length === 0) {
-          return res.status(404).json({ message: "No tasks found in 'In Progress' category for this user." });
+          return res.status(404).json({
+            message: "No tasks found in 'In Progress' category for this user.",
+          });
         }
-    
+
         res.status(200).json(result);
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+          .status(500)
+          .json({ message: "Internal Server Error", error: error.message });
       }
     });
-    
+
     // get Completed task
     app.get("/add-task/getDoneTask/:email", async (req, res) => {
       try {
         const userEmail = req.params.email;
-    
+
         if (!userEmail) {
           return res.status(400).json({ message: "User email is required!" });
         }
-    
+
         // user.email
-        const result = await ToDoAppsTask.find({ "user.email": userEmail, category: "Done" }).toArray();
-    
+        const result = await ToDoAppsTask.find({
+          "user.email": userEmail,
+          category: "Done",
+        }).toArray();
+
         if (!result || result.length === 0) {
-          return res.status(404).json({ message: "No tasks found in 'In Progress' category for this user." });
+          return res.status(404).json({
+            message: "No tasks found in 'In Progress' category for this user.",
+          });
         }
-    
+
         res.status(200).json(result);
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+          .status(500)
+          .json({ message: "Internal Server Error", error: error.message });
       }
     });
-    
+
     // update task status  /add-task/updateCategory/${id}
     app.patch("/add-task/updateCategory/:id", async (req, res) => {
       try {
@@ -349,23 +431,27 @@ async function run() {
         if (!category) {
           return res.status(400).json({ message: "Category is required!" });
         }
-    
+
         const result = await ToDoAppsTask.updateOne(
           { _id: new ObjectId(id) },
           { $set: { category } }
         );
-    
+
         if (result.modifiedCount === 0) {
-          return res.status(404).json({ message: "Task not found or category is already the same." });
+          return res.status(404).json({
+            message: "Task not found or category is already the same.",
+          });
         }
-    
+
         res.status(200).json({ message: "Task status updated successfully" });
       } catch (error) {
         console.error("Error updating task status:", error);
-        res.status(500).json({ message: "Failed to update task status", error: error.message });
+        res.status(500).json({
+          message: "Failed to update task status",
+          error: error.message,
+        });
       }
     });
-
 
     // delete task
     app.delete("/add-task/deleteTask/:id", async (req, res) => {
@@ -379,14 +465,6 @@ async function run() {
         res.status(500).send({ message: "Failed to delete task" });
       }
     });
-
-
-
-
-
-
-
-   
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
