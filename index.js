@@ -122,10 +122,25 @@ async function run() {
     // user added in database
     app.post("/users", async (req, res) => {
       const newUser = req.body;
-      // console.log(newUser);
-      const result = await ToDoAppsUsers.insertOne(newUser);
-      res.send(result);
+      
+      try {
+        
+        const existingUser = await ToDoAppsUsers.findOne({ email: newUser.email });
+    
+        if (existingUser) {
+          // If user already exists, return a message
+          return res.status(400).send({ message: "User with this email already exists." });
+        }
+        
+        
+        const result = await ToDoAppsUsers.insertOne(newUser);
+        res.status(201).send(result); 
+      } catch (error) {
+        console.error("Error inserting user:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
     });
+    
 
     // user update
     app.put("/users/update/:id", async (req, res) => {
