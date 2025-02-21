@@ -54,7 +54,7 @@ JWT_SECRET=your_secret_key
 
 4️⃣ **Run the server**  
 ```bash
-npm start
+nodemon index.js
 ```  
 
 5️⃣ **Server will run on**  
@@ -62,4 +62,4 @@ npm start
 http://localhost:5000
 ```  
 
-This backend supports CRUD operations for task management and real-time updates through API endpoints. 🚀  
+This backend supports CRUD operations for task management and real-time updates through API endpoints.  
